@@ -6,9 +6,11 @@ version = "0.1.0"
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Preferences = "21216c6a-2e73-6563-6e65-726566657250"
 SQLite = "0aa819cd-b072-5ff4-a722-6bc24af294d9"
 
 [compat]
 CSV = "0.10.15"
 DataFrames = "1.7.0"
+Preferences = "1.4.3"
 SQLite = "1.6.1"

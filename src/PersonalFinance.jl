@@ -1,7 +1,7 @@
 module PersonalFinance
 
-export create_database
+export vault
 
-include("mainledger.jl")
+include("database.jl")
 
 end # module PersonalFinance
