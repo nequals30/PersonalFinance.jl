@@ -1,10 +1,12 @@
 using Preferences, SQLite
 
+export vault
+
 struct Vault
 	db::SQLite.DB
 end
 
-function connect_vault()
+function vault()
 	# Check if vault exists. If it doesn't start a dialogue to create it.
 	if !@has_preference("vaultPath")
 		println("No vault is configured yet.")
@@ -25,7 +27,7 @@ end
 
 function create_vault()
 	# check if the user wants to make a vault
-	print("Create a new vault? [y/n]: ")
+	println("Create a new vault? [y/n]: ")
 	inputPath = readline()
 
 	if !startswith(lowercase(inputPath),"y")
@@ -46,16 +48,25 @@ function create_vault()
 				dbPath = abspath(dbPath)
 			end
 			if !isdir(dirname(dbPath))
-				error("No such path exists: $(dbPath)")
+				error("No such directory exists: $(dbPath)")
 			end
 		end
 
 		# create the database
 		dbPath = joinpath(dbPath,"PersonalFinanceVault.db")
-		print("Creating database in $(dbPath)")
+		println("Creating database in $(dbPath)")
 		@set_preferences!("vaultPath" => dbPath)
 		db = SQLite.DB(dbPath)
-		SQLite.execute(db, "CREATE TABLE IF NOT EXISTS people (Name TEXT,Age INTEGER)")
+		SQLite.execute(db, """
+			CREATE TABLE IF NOT EXISTS main_ledger (
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				account INTEGER NOT NULL,
+				dt DATE NOT NULL,
+				description TEXT NOT NULL,
+				amount DECIMAL(7,5) NOT NULL,
+				unitId INTEGER NOT NULL
+		   );""")
+
 	end
 
 	return dbPath
