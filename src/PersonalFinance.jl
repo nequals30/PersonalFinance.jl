@@ -1,6 +1,6 @@
 module PersonalFinance
 
-export vault
+export connect_vault
 
 include("database.jl")
 
