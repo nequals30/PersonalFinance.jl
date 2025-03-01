@@ -6,6 +6,7 @@ struct Vault
 	db::SQLite.DB
 end
 
+
 function vault()
 	# Check if vault exists. If it doesn't start a dialogue to create it.
 	if !@has_preference("vaultPath")
@@ -25,14 +26,14 @@ function vault()
 	return Vault(SQLite.DB(dbPath))
 end
 
+
 function create_vault()
 	# check if the user wants to make a vault
 	println("Create a new vault? [y/n]: ")
 	inputPath = readline()
 
 	if !startswith(lowercase(inputPath),"y")
-		println("User chose not to make a vault. Aborting.")
-		return
+		error("User chose not to create a vault. Aborting.")
 	
 	else
 		println("Creating new vault...")
@@ -70,4 +71,9 @@ function create_vault()
 	end
 
 	return dbPath
+end
+
+function add_to_vault()
+	# account(s), date(s), description(s), amount(s)
+
 end
