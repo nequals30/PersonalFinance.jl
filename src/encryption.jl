@@ -10,7 +10,7 @@ const HEADER_B = "PERSONALFINANCEJL"
 
 const KEY_STORAGE = Dict{Symbol, Any}()
 const KEY_LOCK = ReentrantLock()
-const KEY_EXPIRATION_SECONDS = 10
+const KEY_EXPIRATION_SECONDS = 900
 
 
 """
@@ -87,19 +87,25 @@ end
 
 
 """
-	encrypt_file(pathToFile::String)
+	encrypt_file(pathToFile::String; skipConfirmation::Bool=false)
 
-Creates an interactive dialogue to encrypt the file at the specified path.
+Encrypts the file at the specified path.
+
+# Keyword Arguments
+- `skipConfirmation::Bool=false`: If `true`, bypasses the confirmation prompt before encryption.
+
 """
-function encrypt_file(pathToFile::String)
+function encrypt_file(pathToFile::String; skipConfirmation::Bool=false)
 	# check if the file exists
 	absPath = abspath(pathToFile)
 	check_if_the_file_exists(absPath)
 
 	# interactive confirmation
-	println("\n> > > THIS WILL ENCRYPT:\n $(absPath)\n")
-	if !prompt_yesno("Are you sure you want to encrypt this file?","User chose not to encrypt. Aborting.")
-		return
+	if ~skipConfirmation
+		println("\n> > > THIS WILL ENCRYPT:\n $(absPath)\n")
+		if !prompt_yesno("Are you sure you want to encrypt this file?","User chose not to encrypt. Aborting.")
+			return
+		end
 	end
 
 	# get the key
