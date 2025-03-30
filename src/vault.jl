@@ -1,6 +1,6 @@
-using Preferences, SQLite
+using Preferences, SQLite, DataFrames
 
-export vault
+export vault, add_account, list_accounts
 
 struct Vault
 	db::SQLite.DB
@@ -55,21 +55,68 @@ function create_vault()
 	println("Creating database in $(dbPath)")
 	@set_preferences!("vaultPath" => dbPath)
 	db = SQLite.DB(dbPath)
+
 	SQLite.execute(db, """
-		CREATE TABLE IF NOT EXISTS main_ledger (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			account INTEGER NOT NULL,
-			dt DATE NOT NULL,
-			description TEXT NOT NULL,
+		CREATE TABLE IF NOT EXISTS transactions (
+			trans_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+			account_id INTEGER NOT NULL,
+			trans_date DATE NOT NULL,
+			trans_desc TEXT NOT NULL,
 			amount DECIMAL(7,5) NOT NULL,
-			unitId INTEGER NOT NULL
+			unit_id INTEGER NOT NULL
 	   );""")
 
+	SQLite.execute(db, """
+		CREATE TABLE IF NOT EXISTS accounts (
+			account_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+			account_name TEXT NOT NULL UNIQUE
+		);""")
 
 	return Vault(SQLite.DB(dbPath))
 end
 
-function add_to_vault()
-	# account(s), date(s), description(s), amount(s)
+function add_transactions()
+	# account(s), trans_date(s), trans_desc(s), amount(s), unit(s)
+	
+	# account(s) account_name (text), this should turn it into a number and validate it
+	
+	# unit(s) unit_name (text), this should turn it into a number and validate it
 
 end
+
+function add_account(v::Vault)
+	println("Enter name for account:")
+	inputAccountName = readline()
+
+	while isempty(inputAccountName)
+		inputAccountName = readline()
+	end
+
+	if !prompt_yesno("This will create account '$(inputAccountName)'. Confirm?","User chose not to create account. Aborting")
+		return
+	end
+
+	SQLite.execute(v.db, """
+		insert into accounts (account_name)
+		values ('$(inputAccountName)')
+    ;""")
+	return
+end
+
+function remove_account(v::Vault, accountName::String)
+	if !prompt_yesno("This will remove account $(accountName). Are you sure?","User chose not to remove account. Aborting")
+		return
+	end
+	# check if there are any rows in transaction table
+	# if there are, confirm removal of those
+	# delete account (and transactions if necessary)
+end
+
+function list_accounts(v)
+	accounts = DBInterface.execute(v.db,"""
+		select account_id, account_name from accounts
+		order by account_id;
+		;""")
+	return DataFrame(Tables.columntable(accounts))
+end
+
