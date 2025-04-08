@@ -1,4 +1,6 @@
-export prompt_yesno
+using Dates
+
+export prompt_yesno, excel2date
 
 function prompt_yesno(prompt::String = "Do you want to continue?", failMessage::String = "Operation aborted by user.")
 	while true
@@ -14,5 +16,16 @@ function prompt_yesno(prompt::String = "Do you want to continue?", failMessage::
             println("Invalid input. Please enter 'y' for yes or 'n' for no.\n")
         end
 	end
-
 end
+
+ function prompt_input(prompt::String,default::String)
+ 	println("> > > " * prompt * " (press ENTER for default: $default): ")
+ 	input = readline()
+	println()
+	return isempty(input) ? default : input
+ end
+
+function excel2date(excelNumber::Number)
+	return Date(1899, 12, 30) + Day(excelNumber)
+end
+
