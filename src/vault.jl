@@ -1,6 +1,6 @@
 using Preferences, SQLite, DataFrames, Dates
 
-export vault, add_account, list_accounts, list_units, add_transactions
+export vault, add_account, list_accounts, list_units, add_transactions, list_transactions
 
 struct Vault
 	db::SQLite.DB
@@ -94,6 +94,22 @@ function add_transactions(v::Vault, accounts::Union{AbstractVector{<:AbstractStr
 		unit_ids = unitName2unitId(v, units)
 	end
 
+	date_strings = string.(dates)
+
+	# Handle Duplicates (will attach a number to the end of the description field)
+	transactions = zip(account_ids, date_strings, descriptions, amounts, unit_ids)
+	seen = Dict{Tuple, Int}() 
+	for i in eachindex(accounts)
+		# `seen` is a key value pair, where the keys are unique transactions (tuples), and the value is their count
+		thisKey = (account_ids[i], date_strings[i], descriptions[i], amounts[i], unit_ids[i])
+		count = get!(seen, thisKey, 0) + 1
+		seen[thisKey] = count
+		if count > 1
+			descriptions[i] = "$(descriptions[i]) ($count)"
+			println(descriptions[i])
+		end
+	end
+
 	# load the transactions
 	SQLite.execute(v.db, "BEGIN")
 
@@ -104,13 +120,26 @@ function add_transactions(v::Vault, accounts::Union{AbstractVector{<:AbstractStr
 			DO UPDATE SET amount = excluded.amount
 	""")
 	
-	for (acc, date, desc, amt, unit) in zip(account_ids, dates, descriptions, amounts, unit_ids)
+	for (acc, date, desc, amt, unit) in transactions
 		SQLite.execute(stmt, (acc, date, desc, amt, unit))
 	end
 
 	SQLite.execute(v.db, "COMMIT")
 
 	return
+
+end
+
+function list_transactions(v::Vault)
+	tran_df = DataFrame(Tables.columntable(DBInterface.execute(v.db,"""
+		select trans_id,account_id,trans_date,trans_desc,amount,unit_id
+		from transactions
+		order by account_id;
+		;""")))
+
+	rename!(tran_df, ["transaction_id","account_id","date","description","amount","units"])
+	tran_df.date = Date.(tran_df.date, dateformat"yyyy-mm-dd")
+	return tran_df
 
 end
 
