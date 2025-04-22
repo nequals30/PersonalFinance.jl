@@ -1,6 +1,6 @@
 using Preferences, SQLite, DataFrames, Dates
 
-export vault, add_account, list_accounts, list_units, add_transactions, list_transactions
+export vault, add_account, list_accounts, add_units, list_units, add_transactions, list_transactions, summarize_accounts
 
 struct Vault
 	db::SQLite.DB
@@ -106,7 +106,6 @@ function add_transactions(v::Vault, accounts::Union{AbstractVector{<:AbstractStr
 		seen[thisKey] = count
 		if count > 1
 			descriptions[i] = "$(descriptions[i]) ($count)"
-			println(descriptions[i])
 		end
 	end
 
@@ -132,32 +131,40 @@ end
 
 function list_transactions(v::Vault)
 	tran_df = DataFrame(Tables.columntable(DBInterface.execute(v.db,"""
-		select trans_id,account_id,trans_date,trans_desc,amount,unit_id
+		select trans_id,account_name,trans_date,trans_desc,amount,unit_name
 		from transactions
-		order by account_id;
+		left join accounts on (accounts.account_id=transactions.account_id)
+		left join units on (units.unit_id=transactions.unit_id)
+		order by trans_date, account_name;
 		;""")))
+		# where trans_desc not like '%NISA%' 
 
-	rename!(tran_df, ["transaction_id","account_id","date","description","amount","units"])
+	rename!(tran_df, ["transaction_id","account_name","date","description","amount","units"])
 	tran_df.date = Date.(tran_df.date, dateformat"yyyy-mm-dd")
 	return tran_df
-
 end
 
-function add_account(v::Vault)
-	println("Enter name for account:")
-	inputAccountName = readline()
+function add_account(v::Vault; accountName::AbstractString="", skipConfirmation::Bool=false)
 
-	while isempty(inputAccountName)
-		inputAccountName = readline()
+	if accountName===""
+		println("Enter name for account:")
+		accountName = readline()
+
+		while isempty(accountName)
+			accountName = readline()
+		end
 	end
 
-	if !prompt_yesno("This will create account '$(inputAccountName)'. Confirm?","User chose not to create account. Aborting")
-		return
+	if ~skipConfirmation
+		if !prompt_yesno("This will create account '$(accountName)'. Confirm?","User chose not to create account. Aborting")
+			return
+		end
 	end
 
 	SQLite.execute(v.db, """
 		insert into accounts (account_name)
-		values ('$(inputAccountName)')
+		values ('$(accountName)')
+		on conflict (account_name) do update set account_name=excluded.account_name
     ;""")
 	return
 end
@@ -178,11 +185,50 @@ function list_accounts(v::Vault)
 		;""")))
 end
 
+function add_units(v::Vault; unitsName::AbstractString="", skipConfirmation::Bool=false)
+
+	if unitsName===""
+		println("Enter name for units:")
+		unitsName = readline()
+
+		while isempty(unitsName)
+			unitsName = readline()
+		end
+	end
+
+	if ~skipConfirmation
+		if !prompt_yesno("This will create units '$(unitsName)'. Confirm?","User chose not to create units. Aborting")
+			return
+		end
+	end
+
+	SQLite.execute(v.db, """
+		insert into units (unit_name)
+		values ('$(unitsName)')
+		on conflict (unit_name) do update set unit_name=excluded.unit_name
+    ;""")
+	return
+end
+
 function list_units(v::Vault)
 	return DataFrame(Tables.columntable(DBInterface.execute(v.db,"""
 		select unit_id,unit_name from units
 		order by unit_id;
 	   ;""")))
+end
+
+function summarize_accounts(v::Vault)
+	df = DataFrame(Tables.columntable(DBInterface.execute(v.db,"""
+		select account_name, unit_name, sum(amount) as total_amount
+		from transactions t
+		right join accounts a on (a.account_id=t.account_id)
+		right join units u on (u.unit_id = t.unit_id)
+		group by account_name, unit_name;
+		;""")))
+
+	df.total_amount[abs.(df.total_amount).<0.01] .= 0
+
+	return df
 end
 
 function unitName2unitId(v::Vault,inNames::AbstractVector{<:AbstractString})
