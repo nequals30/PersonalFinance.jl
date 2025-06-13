@@ -226,6 +226,7 @@ function summarize_accounts(v::Vault)
 		group by account_name, unit_name;
 		;""")))
 
+	df = df[.!ismissing.(df.account_name),:]
 	df.total_amount[abs.(df.total_amount).<0.01] .= 0
 
 	return df
