@@ -11,6 +11,7 @@ Nettle = "49dea1ee-f6fa-5aa6-9a11-8816cee7d4b9"
 Preferences = "21216c6a-2e73-6563-6e65-726566657250"
 SHA = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 SQLite = "0aa819cd-b072-5ff4-a722-6bc24af294d9"
+YFinance = "e4b3b0a2-f9a3-42f3-aabb-32142cceaf77"
 
 [compat]
 CSV = "0.10.15"
@@ -20,3 +21,4 @@ Nettle = "1.0.0"
 Preferences = "1.4.3"
 SHA = "0.7.0"
 SQLite = "1.6.1"
+YFinance = "0.1.10"

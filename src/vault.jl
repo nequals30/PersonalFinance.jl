@@ -1,6 +1,6 @@
 using Preferences, SQLite, DataFrames, Dates
 
-export vault, add_account, list_accounts, add_units, list_units, add_transactions, list_transactions, summarize_accounts
+export vault, add_account, list_accounts, add_assets, list_assets, add_transactions, list_transactions, summarize_accounts
 
 struct Vault
 	db::SQLite.DB
@@ -58,8 +58,8 @@ function create_vault()
 			trans_date DATE NOT NULL,
 			trans_desc TEXT NOT NULL,
 			amount DECIMAL(7,5) NOT NULL,
-			unit_id INTEGER NOT NULL,
-			UNIQUE(account_id, trans_date, trans_desc, amount, unit_id)
+			asset_id INTEGER NOT NULL,
+			UNIQUE(account_id, trans_date, trans_desc, amount, asset_id)
 	   );""")
 
 	SQLite.execute(db, """
@@ -69,39 +69,40 @@ function create_vault()
 		);""")
 	
 
-	inputUnits = prompt_input("What should the default units be?","USD")
+	inputUnits = prompt_input("What should the default asset be?","USD")
 	SQLite.execute(db, """
-		CREATE TABLE IF NOT EXISTS units (
-			unit_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-			unit_name TEXT NOT NULL UNIQUE
+		CREATE TABLE IF NOT EXISTS assets (
+			asset_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+			asset_name TEXT NOT NULL UNIQUE
 	   );""")
-	SQLite.execute(db, "INSERT INTO units (unit_id,unit_name) values (1,'$inputUnits');")
+
+	SQLite.execute(db, "INSERT INTO assets (asset_id,asset_name) values (1,'$inputUnits');")
 
 	return Vault(SQLite.DB(dbPath))
 end
 
-function add_transactions(v::Vault, accounts::Union{AbstractVector{<:AbstractString},AbstractString}, dates::AbstractVector{<:Date}, descriptions::AbstractVector{<:AbstractString}, amounts::AbstractVector{<:Number}; units::Union{AbstractVector{<:AbstractString},AbstractString}="")
+function add_transactions(v::Vault, accounts::Union{AbstractVector{<:AbstractString},AbstractString}, dates::AbstractVector{<:Date}, descriptions::AbstractVector{<:AbstractString}, amounts::AbstractVector{<:Number}; assets::Union{AbstractVector{<:AbstractString},AbstractString}="")
 
 	# Validate accounts and look up account_ids
 	accounts = isa(accounts, AbstractString) ? fill(accounts, length(dates)) : accounts
 	account_ids = accountName2accountId(v, accounts)
 
-	# Validate units and look up unit_ids
-	if units === ""
-		unit_ids = fill(1, length(dates))
+	# Validate assets and look up asset_ids
+	if assets === ""
+		asset_ids = fill(1, length(dates))
 	else
-		units = isa(units, AbstractString) ? fill(units, length(dates)) : units
-		unit_ids = unitName2unitId(v, units)
+		assets = isa(assets, AbstractString) ? fill(assets, length(dates)) : assets
+		asset_ids = assetName2assetId(v, assets)
 	end
 
 	date_strings = string.(dates)
 
 	# Handle Duplicates (will attach a number to the end of the description field)
-	transactions = zip(account_ids, date_strings, descriptions, amounts, unit_ids)
+	transactions = zip(account_ids, date_strings, descriptions, amounts, asset_ids)
 	seen = Dict{Tuple, Int}() 
 	for i in eachindex(accounts)
 		# `seen` is a key value pair, where the keys are unique transactions (tuples), and the value is their count
-		thisKey = (account_ids[i], date_strings[i], descriptions[i], amounts[i], unit_ids[i])
+		thisKey = (account_ids[i], date_strings[i], descriptions[i], amounts[i], asset_ids[i])
 		count = get!(seen, thisKey, 0) + 1
 		seen[thisKey] = count
 		if count > 1
@@ -113,14 +114,14 @@ function add_transactions(v::Vault, accounts::Union{AbstractVector{<:AbstractStr
 	SQLite.execute(v.db, "BEGIN")
 
 	stmt = SQLite.Stmt(v.db,"""
-			INSERT INTO transactions (account_id, trans_date, trans_desc, amount, unit_id)
+			INSERT INTO transactions (account_id, trans_date, trans_desc, amount, asset_id)
 			VALUES(?, ?, ?, ?, ?)
-			ON CONFLICT(account_id, trans_date, trans_desc, amount, unit_id)
+			ON CONFLICT(account_id, trans_date, trans_desc, amount, asset_id)
 			DO UPDATE SET amount = excluded.amount
 	""")
 	
-	for (acc, date, desc, amt, unit) in transactions
-		SQLite.execute(stmt, (acc, date, desc, amt, unit))
+	for (acc, date, desc, amt, asset) in transactions
+		SQLite.execute(stmt, (acc, date, desc, amt, asset))
 	end
 
 	SQLite.execute(v.db, "COMMIT")
@@ -131,15 +132,15 @@ end
 
 function list_transactions(v::Vault)
 	tran_df = DataFrame(Tables.columntable(DBInterface.execute(v.db,"""
-		select trans_id,account_name,trans_date,trans_desc,amount,unit_name
+		select trans_id,account_name,trans_date,trans_desc,amount,asset_name
 		from transactions
 		left join accounts on (accounts.account_id=transactions.account_id)
-		left join units on (units.unit_id=transactions.unit_id)
+		left join assets on (assets.asset_id=transactions.asset_id)
 		order by trans_date, account_name;
 		;""")))
 		# where trans_desc not like '%NISA%' 
 
-	rename!(tran_df, ["transaction_id","account_name","date","description","amount","units"])
+	rename!(tran_df, ["transaction_id","account_name","date","description","amount","assets"])
 	tran_df.date = Date.(tran_df.date, dateformat"yyyy-mm-dd")
 	return tran_df
 end
@@ -185,45 +186,45 @@ function list_accounts(v::Vault)
 		;""")))
 end
 
-function add_units(v::Vault; unitsName::AbstractString="", skipConfirmation::Bool=false)
+function add_assets(v::Vault; assetsName::AbstractString="", skipConfirmation::Bool=false)
 
-	if unitsName===""
-		println("Enter name for units:")
-		unitsName = readline()
+	if assetsName===""
+		println("Enter name for assets:")
+		assetsName = readline()
 
-		while isempty(unitsName)
-			unitsName = readline()
+		while isempty(assetsName)
+			assetsName = readline()
 		end
 	end
 
 	if ~skipConfirmation
-		if !prompt_yesno("This will create units '$(unitsName)'. Confirm?","User chose not to create units. Aborting")
+		if !prompt_yesno("This will create assets '$(assetsName)'. Confirm?","User chose not to create assets. Aborting")
 			return
 		end
 	end
 
 	SQLite.execute(v.db, """
-		insert into units (unit_name)
-		values ('$(unitsName)')
-		on conflict (unit_name) do update set unit_name=excluded.unit_name
+		insert into assets (asset_name)
+		values ('$(assetsName)')
+		on conflict (asset_name) do update set asset_name=excluded.asset_name
     ;""")
 	return
 end
 
-function list_units(v::Vault)
+function list_assets(v::Vault)
 	return DataFrame(Tables.columntable(DBInterface.execute(v.db,"""
-		select unit_id,unit_name from units
-		order by unit_id;
+		select asset_id,asset_name from assets
+		order by asset_id;
 	   ;""")))
 end
 
 function summarize_accounts(v::Vault)
 	df = DataFrame(Tables.columntable(DBInterface.execute(v.db,"""
-		select account_name, unit_name, sum(amount) as total_amount
+		select account_name, asset_name, sum(amount) as total_amount
 		from transactions t
 		right join accounts a on (a.account_id=t.account_id)
-		right join units u on (u.unit_id = t.unit_id)
-		group by account_name, unit_name;
+		right join assets u on (u.asset_id = t.asset_id)
+		group by account_name, asset_name;
 		;""")))
 
 	df = df[.!ismissing.(df.account_name),:]
@@ -232,13 +233,13 @@ function summarize_accounts(v::Vault)
 	return df
 end
 
-function unitName2unitId(v::Vault,inNames::AbstractVector{<:AbstractString})
-	units_df = list_units(v)
-	unit_lookup = Dict(lowercase.(units_df.unit_name) .=> units_df.unit_id)
-	outIds = [get(unit_lookup, lowercase(u), missing) for u in inNames]
+function assetName2assetId(v::Vault,inNames::AbstractVector{<:AbstractString})
+	assets_df = list_assets(v)
+	asset_lookup = Dict(lowercase.(assets_df.asset_name) .=> assets_df.asset_id)
+	outIds = [get(asset_lookup, lowercase(u), missing) for u in inNames]
 	if any(ismissing, outIds)
-		bad_unit = inNames[findfirst(ismissing, outIds)]
-		error("Units are not in the database, e.g. $bad_unit")
+		bad_asset = inNames[findfirst(ismissing, outIds)]
+		error("Units are not in the database, e.g. $bad_asset")
 	end
 	return outIds
 end
@@ -248,8 +249,8 @@ function accountName2accountId(v::Vault,inNames::AbstractVector{<:AbstractString
 	account_lookup = Dict(lowercase.(accounts_df.account_name) .=> accounts_df.account_id)
 	outIds = [get(account_lookup, lowercase(a), missing) for a in inNames]
 	if any(ismissing, outIds)
-		bad_unit = inNames[findfirst(ismissing, outIds)]
-		error("Accounts are not in the database, e.g. $bad_unit")
+		bad_asset = inNames[findfirst(ismissing, outIds)]
+		error("Accounts are not in the database, e.g. $bad_asset")
 	end
 	return outIds
 end
