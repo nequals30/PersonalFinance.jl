@@ -1,4 +1,4 @@
-using YFinance, Dates, DataFrames
+using YFinance, Dates, DataFrames, SQLite
 
 export populate_yfinance_prices
 
@@ -17,7 +17,18 @@ function populate_yfinance_prices(v::Vault,assets::AbstractVector{<:AbstractStri
 	endDt = today()
 
 	raw_data = get_prices.(assets,interval="1d", startdt=startDt, enddt=endDt)
-	x = vcat([DataFrame(i) for i in raw_data]...)
+	yahoo_df = vcat([DataFrame(i) for i in raw_data]...)
 
-	return x
+	yahoo_df.asset_id .= assetName2assetId(v,yahoo_df.ticker)
+
+	yahoo_df_toload = select(yahoo_df, 
+		:asset_id,
+		:timestamp => ByRow(x -> string(Date(x))) => :price_date,
+		:close => :price
+	)
+
+	SQLite.load!(yahoo_df_toload, v.db, "prices"; on_conflict="IGNORE")
+
+	return
+
 end
