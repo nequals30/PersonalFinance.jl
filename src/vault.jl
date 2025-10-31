@@ -1,6 +1,6 @@
 using Preferences, SQLite, DataFrames, Dates
 
-export vault, add_account, list_accounts, add_assets, list_assets, add_transactions, list_transactions, summarize_accounts, get_asset_prices
+export vault, add_account, list_accounts, add_assets, list_assets, add_transactions, list_transactions, accumulate_mv, summarize_accounts, get_asset_prices
 
 struct Vault
 	db::SQLite.DB
@@ -244,31 +244,35 @@ function get_asset_prices(v::Vault, dates::AbstractVector{<:Date}, assets::Abstr
 	prices_df.price_date = Date.(prices_df.price_date,"yyyy-mm-dd")
 
 	# rearrange
-	# (there must be some better way of doing this in Julia)
 	asset_map = Dict(asset_ids[i] => assets[i] for i in eachindex(asset_ids))
 	prices_df.asset = [asset_map[id] for id in prices_df.asset_id]
 	prices_wide = unstack(prices_df, :price_date, :asset, :price)
 	prices_grid = Matrix(coalesce.(prices_wide[:, Not(:price_date)], NaN))
 
-	idxDates = [findfirst(==(d), prices_df.price_date) for d in dates]
+	idxDates = [findfirst(==(d), prices_wide.price_date) for d in dates]
 	idxAssets = [findfirst(==(a), names(prices_wide)[2:end]) for a in assets]
 	
 	isBadRow = isnothing.(idxDates)
 	isBadCol = isnothing.(idxAssets)
 
-	idxDates[isBadRow] .= 1
-	idxAssets[isBadCol] .= 1
-	
-	out = prices_grid[idxDates, idxAssets]
-	out[isBadRow,:] .= NaN
-	out[:,isBadCol] .= NaN
+	if all(isBadRow)
+		out = fill(NaN, length(dates), length(assets))
+	else
+		idxDates[isBadRow] .= 1
+		idxAssets[isBadCol] .= 1
 
+		out = prices_grid[idxDates, idxAssets]
+		out[isBadRow,:] .= NaN
+		out[:,isBadCol] .= NaN
+		
+	end
 	# fill prices of base currency with 1
 	out[:,asset_ids.==1] .= 1
-	
+
 	# fill missing with stale
 	
 	return out
+
 end
 
 function list_assets(v::Vault)
@@ -276,6 +280,36 @@ function list_assets(v::Vault)
 		select asset_id,asset_name from assets
 		order by asset_id;
 	   ;""")))
+end
+
+function accumulate_mv(v::Vault)
+	df = list_transactions(v)
+
+	# add a bunch of dummy rows
+	allDts = collect(minimum(df.date):Day(1):maximum(df.date))
+	nDts = length(allDts)
+	dummy_df = DataFrame(date = allDts,
+						 account_name = fill(df.account_name[1], nDts),
+						 assets = fill(df.assets[1], nDts),
+						 amount = zeros(nDts) )
+	df = vcat(df, dummy_df; cols=:union)
+
+	# aggregate
+    daily = combine(groupby(df, [:date, :account_name, :assets]), :amount => sum => :amount)
+	daily.colname = daily.account_name .* "::" .* daily.assets
+	w = unstack(daily, :date, :colname, :amount; combine=sum, fill=0)
+	w = sort!(w, :date)
+	w[!, 2:end] = round.(cumsum(Matrix(w[:, 2:end]); dims = 1); digits=2)
+
+	# multiply by prices
+	asset_names = String.(last.(split.(names(w)[2:end], "::")))
+	prices = get_asset_prices(v, allDts, asset_names)
+
+	out = w[:,2:end] .* prices
+
+	return out
+
+
 end
 
 function summarize_accounts(v::Vault)
