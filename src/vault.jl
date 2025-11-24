@@ -225,7 +225,7 @@ function add_assets(v::Vault; assetsName::AbstractString="", skipConfirmation::B
 	return
 end
 
-function get_asset_prices(v::Vault, dates::AbstractVector{<:Date}, assets::AbstractVector{<:String})
+function get_asset_prices(v::Vault, dates::AbstractVector{<:Date}, assets::AbstractVector{<:String}; fillMissingWithStale::Bool=true)
 
 	asset_ids = assetName2assetId(v,assets)
 	asset_ids_str = join(asset_ids, ",")
@@ -247,7 +247,7 @@ function get_asset_prices(v::Vault, dates::AbstractVector{<:Date}, assets::Abstr
 	asset_map = Dict(asset_ids[i] => assets[i] for i in eachindex(asset_ids))
 	prices_df.asset = [asset_map[id] for id in prices_df.asset_id]
 	prices_wide = unstack(prices_df, :price_date, :asset, :price)
-	prices_grid = Matrix(coalesce.(prices_wide[:, Not(:price_date)], NaN))
+	prices_grid = Matrix(coalesce.(prices_wide[:, Not(:price_date)], missing))
 
 	idxDates = [findfirst(==(d), prices_wide.price_date) for d in dates]
 	idxAssets = [findfirst(==(a), names(prices_wide)[2:end]) for a in assets]
@@ -256,20 +256,26 @@ function get_asset_prices(v::Vault, dates::AbstractVector{<:Date}, assets::Abstr
 	isBadCol = isnothing.(idxAssets)
 
 	if all(isBadRow)
-		out = fill(NaN, length(dates), length(assets))
+		out = Matrix{Union{Missing,Float64}}(undef, length(dates), length(assets))
+		out .= missing
 	else
 		idxDates[isBadRow] .= 1
 		idxAssets[isBadCol] .= 1
 
-		out = prices_grid[idxDates, idxAssets]
-		out[isBadRow,:] .= NaN
-		out[:,isBadCol] .= NaN
+		out = Matrix{Union{Missing,Float64}}(prices_grid[idxDates, idxAssets])
+		out[isBadRow,:] .= missing
+		out[:,isBadCol] .= missing
 		
 	end
 	# fill prices of base currency with 1
 	out[:,asset_ids.==1] .= 1
 
 	# fill missing with stale
+	if fillMissingWithStale
+		ffill_vec(v) = v[accumulate(max,(i*!ismissing(v[i]) for i in eachindex(v)); init = firstindex(v))]
+
+		out = hcat(ffill_vec.(eachcol(out))...)
+	end
 	
 	return out
 
@@ -307,7 +313,7 @@ function accumulate_mv(v::Vault)
 
 	out = w[:,2:end] .* prices
 
-	return out
+	return out, allDts
 
 
 end

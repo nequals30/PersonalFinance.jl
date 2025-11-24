@@ -1,6 +1,6 @@
 using Dates
 
-export prompt_yesno, excel2date
+export prompt_yesno, excel2date, date2excel
 
 function prompt_yesno(prompt::String = "Do you want to continue?", failMessage::String = "Operation aborted by user.")
 	while true
@@ -29,3 +29,6 @@ function excel2date(excelNumber::Number)
 	return Date(1899, 12, 30) + Day(excelNumber)
 end
 
+function date2excel(date::Date)
+	return Dates.value(date - Date(1899,12,30))
+end
