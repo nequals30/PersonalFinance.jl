@@ -7,11 +7,17 @@ struct Vault
 end
 
 
-function vault()
+function vault(dbPath::Union{Nothing,String}=nothing)
 	# Check if vault exists. If it doesn't start a dialogue to create it.
-	if !@has_preference("vaultPath")
+	
+	if dbPath != nothing
+		println("Using Vault at specified path")
+		outVault = Vault(SQLite.DB(dbPath))
+
+	elseif !@has_preference("vaultPath")
 		println("No vault is configured yet.")
 		outVault = create_vault()
+
 	else
 		expectedDbPath = @load_preference("vaultPath")
 		println("Looking for vault at $(expectedDbPath)")
@@ -326,6 +332,7 @@ function summarize_accounts(v::Vault)
 			asset_name,
 			SUM(amount) AS total_amount,
 			ownership_share,
+			MAX(t.trans_date) AS most_recent_trans_date,
 			CASE 
 				WHEN u.asset_id = 1 THEN 1 
 				ELSE p.price 

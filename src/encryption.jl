@@ -1,6 +1,6 @@
 using Nettle, SHA, Base, Dates
 
-export encrypt_file, decrypt_file, ask_password
+export encrypt_file, decrypt_file, read_encrypted_file, ask_password
 
 # HEADER_B is added to the file before encrypting it. Used to make sure the decrpytion password is right.
 # HEADER_A is added to the file after encrypting it, to make sure decrpytion is being run on an encrypted file.
@@ -150,7 +150,7 @@ end
 
 Creates an interactive dialogue to decrypt the file at the specified path.
 """
-function decrypt_file(pathToFile::String)
+function decrypt_file(pathToFile::String; noWrite::Bool=false)
 	# check if the file exists
 	absPath = abspath(pathToFile)
 	check_if_the_file_exists(absPath)
@@ -189,11 +189,19 @@ function decrypt_file(pathToFile::String)
 	plaintext = trim_padding_PKCS5(padded_plaintext)
     plaintext = plaintext[length(HEADER_B)+1:end]
 
-	open(absPath,"w") do io
-		write(io,plaintext)
-	end
+	if noWrite
+		return IOBuffer(plaintext)
+	else
+		open(absPath,"w") do io
+			write(io,plaintext)
+		end
 
-	println("FILE DECRYPTED")
-	return
+		println("FILE DECRYPTED")
+		return
+	end
 end
 
+
+function read_encrypted_file(pathToFile::String)
+	return decrypt_file(pathToFile, noWrite=true)
+end
