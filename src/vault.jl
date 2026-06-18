@@ -1,48 +1,46 @@
-using Preferences, SQLite, DataFrames, Dates
+using SQLite, DataFrames, Dates
 
-export vault, add_account, list_accounts, add_assets, list_assets, add_transactions, list_transactions, accumulate_mv, summarize_accounts, get_asset_prices
+export vault, create_vault, add_account, list_accounts, add_assets, list_assets, add_transactions, list_transactions, accumulate_mv, summarize_accounts, get_asset_prices
+
 
 struct Vault
 	db::SQLite.DB
 end
 
 
-function vault(dbPath::Union{Nothing,String}=nothing)
-	# Check if vault exists. If it doesn't start a dialogue to create it.
-	
-	if dbPath != nothing
+function vault(dbPath::String)
+	# Gets the Vault at a specified filepath
+	if isfile(dbPath)
 		println("Using Vault at specified path")
 		outVault = Vault(SQLite.DB(dbPath))
-
-	elseif !@has_preference("vaultPath")
-		println("No vault is configured yet.")
-		outVault = create_vault()
-
 	else
-		expectedDbPath = @load_preference("vaultPath")
-		println("Looking for vault at $(expectedDbPath)")
-		if isfile(expectedDbPath)
-			dbPath = expectedDbPath
-			outVault = Vault(SQLite.DB(dbPath))
-
-		else
-			println("No vault exists at $(expectedDbPath)")
-			outVault = create_vault()
-		end
+		error("No vault exists at $(dbPath)")
 	end
 
 	return outVault
 end
 
-function create_vault()
+
+function create_vault(; interactive::Bool=true, vaultPath::Union{Nothing,String}=nothing, defaultAsset::String="USD")
+
+	if !interactive && vaultPath === nothing
+		error("vaultPath is required when interactive=false")
+    end
+
 	# check if the user wants to make a vault
-	if !prompt_yesno("Create a new vault?","User chose not to create a vault. Aborting")
-		return
+	if interactive
+		if !prompt_yesno("Create a new vault?","User chose not to create a vault. Aborting")
+			return
+		end
 	end
 	println("Creating new vault...")
 
-	# ask the user where they want the db created
-	inputPath = prompt_input("Where should the database be created?",homedir())
+	# ask the user where they want the vault created
+	if interactive
+		inputPath = prompt_input("Where should the database be created?",homedir())
+	else
+		inputPath = vaultPath
+	end
 	dbPath = expanduser(inputPath)
 	if !isabspath(dbPath)
 		dbPath = abspath(dbPath)
@@ -51,10 +49,15 @@ function create_vault()
 		error("No such directory exists: $(dbPath)")
 	end
 
+	if interactive
+		inputUnits = prompt_input("What should the default asset be?","USD")
+	else
+		inputUnits = defaultAsset
+	end
+
 	# create the database
 	dbPath = joinpath(dbPath,"PersonalFinanceVault.db")
 	println("Creating database in $(dbPath)")
-	@set_preferences!("vaultPath" => dbPath)
 	db = SQLite.DB(dbPath)
 
 	SQLite.execute(db, """
@@ -80,7 +83,6 @@ function create_vault()
 			asset_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 			asset_name TEXT NOT NULL UNIQUE
 	   );""")
-	inputUnits = prompt_input("What should the default asset be?","USD")
 	SQLite.execute(db, "INSERT INTO assets (asset_id,asset_name) values (1,'$inputUnits');")
 
 	SQLite.execute(db, """
