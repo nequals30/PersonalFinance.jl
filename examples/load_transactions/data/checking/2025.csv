@@ -1,0 +1,74 @@
+date,description,amount
+2025-01-01,ACME Corp Payroll,3030.89
+2025-01-05,Transfer to joint-checking,-1400.0
+2025-01-15,ACME Corp Payroll,3049.23
+2025-01-16,Transfer to brokerage,-800.0
+2025-01-20,ATM withdrawal,-64.07
+2025-01-25,Credit card payment,-326.8
+2025-02-01,ACME Corp Payroll,2999.25
+2025-02-05,Transfer to joint-checking,-1400.0
+2025-02-15,ACME Corp Payroll,2955.77
+2025-02-16,Transfer to brokerage,-800.0
+2025-02-20,ATM withdrawal,-60.75
+2025-02-25,Credit card payment,-259.96
+2025-03-01,ACME Corp Payroll,2975.14
+2025-03-05,Transfer to joint-checking,-1400.0
+2025-03-15,ACME Corp Payroll,3029.4
+2025-03-16,Transfer to brokerage,-800.0
+2025-03-20,ATM withdrawal,-60.5
+2025-03-25,Credit card payment,-376.75
+2025-04-01,ACME Corp Payroll,2978.76
+2025-04-05,Transfer to joint-checking,-1400.0
+2025-04-15,ACME Corp Payroll,3027.18
+2025-04-16,Transfer to brokerage,-800.0
+2025-04-18,IRS tax refund,734.4
+2025-04-20,ATM withdrawal,-76.03
+2025-04-25,Credit card payment,-236.1
+2025-05-01,ACME Corp Payroll,3026.92
+2025-05-05,Transfer to joint-checking,-1400.0
+2025-05-15,ACME Corp Payroll,2971.45
+2025-05-16,Transfer to brokerage,-800.0
+2025-05-20,ATM withdrawal,-70.77
+2025-05-25,Credit card payment,-252.13
+2025-06-01,ACME Corp Payroll,2962.94
+2025-06-05,Transfer to joint-checking,-1400.0
+2025-06-15,ACME Corp Payroll,3021.59
+2025-06-16,Transfer to brokerage,-800.0
+2025-06-20,ATM withdrawal,-64.77
+2025-06-25,Credit card payment,-210.04
+2025-07-01,ACME Corp Payroll,2960.3
+2025-07-05,Transfer to joint-checking,-1400.0
+2025-07-15,ACME Corp Payroll,2968.9
+2025-07-16,Transfer to brokerage,-800.0
+2025-07-20,ATM withdrawal,-73.64
+2025-07-25,Credit card payment,-365.77
+2025-08-01,ACME Corp Payroll,3028.89
+2025-08-05,Transfer to joint-checking,-1400.0
+2025-08-15,ACME Corp Payroll,2992.69
+2025-08-16,Transfer to brokerage,-800.0
+2025-08-20,ATM withdrawal,-62.62
+2025-08-25,Credit card payment,-346.44
+2025-09-01,ACME Corp Payroll,2989.43
+2025-09-05,Transfer to joint-checking,-1400.0
+2025-09-15,ACME Corp Payroll,2956.01
+2025-09-16,Transfer to brokerage,-800.0
+2025-09-20,ATM withdrawal,-77.25
+2025-09-25,Credit card payment,-310.82
+2025-10-01,ACME Corp Payroll,2973.42
+2025-10-05,Transfer to joint-checking,-1400.0
+2025-10-15,ACME Corp Payroll,3034.01
+2025-10-16,Transfer to brokerage,-800.0
+2025-10-20,ATM withdrawal,-78.6
+2025-10-25,Credit card payment,-289.99
+2025-11-01,ACME Corp Payroll,3024.0
+2025-11-05,Transfer to joint-checking,-1400.0
+2025-11-15,ACME Corp Payroll,3016.18
+2025-11-16,Transfer to brokerage,-800.0
+2025-11-20,ATM withdrawal,-68.54
+2025-11-25,Credit card payment,-185.94
+2025-12-01,ACME Corp Payroll,2968.34
+2025-12-05,Transfer to joint-checking,-1400.0
+2025-12-15,ACME Corp Payroll,2987.59
+2025-12-16,Transfer to brokerage,-800.0
+2025-12-20,ATM withdrawal,-68.04
+2025-12-25,Credit card payment,-357.78

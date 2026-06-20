@@ -1,0 +1,74 @@
+date,description,amount
+2023-01-01,ACME Corp Payroll,3033.63
+2023-01-05,Transfer to joint-checking,-1400.0
+2023-01-15,ACME Corp Payroll,3042.66
+2023-01-16,Transfer to brokerage,-800.0
+2023-01-20,ATM withdrawal,-79.12
+2023-01-25,Credit card payment,-327.07
+2023-02-01,ACME Corp Payroll,2971.3
+2023-02-05,Transfer to joint-checking,-1400.0
+2023-02-15,ACME Corp Payroll,3000.19
+2023-02-16,Transfer to brokerage,-800.0
+2023-02-20,ATM withdrawal,-69.5
+2023-02-25,Credit card payment,-110.66
+2023-03-01,ACME Corp Payroll,3016.22
+2023-03-05,Transfer to joint-checking,-1400.0
+2023-03-15,ACME Corp Payroll,2972.32
+2023-03-16,Transfer to brokerage,-800.0
+2023-03-20,ATM withdrawal,-65.24
+2023-03-25,Credit card payment,-301.43
+2023-04-01,ACME Corp Payroll,3036.24
+2023-04-05,Transfer to joint-checking,-1400.0
+2023-04-15,ACME Corp Payroll,2998.82
+2023-04-16,Transfer to brokerage,-800.0
+2023-04-18,IRS tax refund,912.59
+2023-04-20,ATM withdrawal,-70.74
+2023-04-25,Credit card payment,-220.34
+2023-05-01,ACME Corp Payroll,3030.39
+2023-05-05,Transfer to joint-checking,-1400.0
+2023-05-15,ACME Corp Payroll,3014.07
+2023-05-16,Transfer to brokerage,-800.0
+2023-05-20,ATM withdrawal,-71.23
+2023-05-25,Credit card payment,-397.45
+2023-06-01,ACME Corp Payroll,2961.09
+2023-06-05,Transfer to joint-checking,-1400.0
+2023-06-15,ACME Corp Payroll,3019.93
+2023-06-16,Transfer to brokerage,-800.0
+2023-06-20,ATM withdrawal,-67.25
+2023-06-25,Credit card payment,-652.48
+2023-07-01,ACME Corp Payroll,3022.54
+2023-07-05,Transfer to joint-checking,-1400.0
+2023-07-15,ACME Corp Payroll,3018.75
+2023-07-16,Transfer to brokerage,-800.0
+2023-07-20,ATM withdrawal,-78.42
+2023-07-25,Credit card payment,-188.1
+2023-08-01,ACME Corp Payroll,3000.66
+2023-08-05,Transfer to joint-checking,-1400.0
+2023-08-15,ACME Corp Payroll,2951.64
+2023-08-16,Transfer to brokerage,-800.0
+2023-08-20,ATM withdrawal,-76.65
+2023-08-25,Credit card payment,-242.28
+2023-09-01,ACME Corp Payroll,2987.44
+2023-09-05,Transfer to joint-checking,-1400.0
+2023-09-15,ACME Corp Payroll,3019.7
+2023-09-16,Transfer to brokerage,-800.0
+2023-09-20,ATM withdrawal,-77.3
+2023-09-25,Credit card payment,-326.91
+2023-10-01,ACME Corp Payroll,2954.34
+2023-10-05,Transfer to joint-checking,-1400.0
+2023-10-15,ACME Corp Payroll,3019.39
+2023-10-16,Transfer to brokerage,-800.0
+2023-10-20,ATM withdrawal,-69.38
+2023-10-25,Credit card payment,-529.45
+2023-11-01,ACME Corp Payroll,3032.47
+2023-11-05,Transfer to joint-checking,-1400.0
+2023-11-15,ACME Corp Payroll,2954.89
+2023-11-16,Transfer to brokerage,-800.0
+2023-11-20,ATM withdrawal,-77.43
+2023-11-25,Credit card payment,-196.33
+2023-12-01,ACME Corp Payroll,2995.01
+2023-12-05,Transfer to joint-checking,-1400.0
+2023-12-15,ACME Corp Payroll,3036.18
+2023-12-16,Transfer to brokerage,-800.0
+2023-12-20,ATM withdrawal,-79.83
+2023-12-25,Credit card payment,-480.4

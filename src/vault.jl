@@ -48,6 +48,10 @@ function create_vault(; interactive::Bool=true, vaultPath::Union{Nothing,String}
 	if !isdir(dirname(dbPath))
 		error("No such directory exists: $(dbPath)")
 	end
+	dbPath = joinpath(dbPath,"PersonalFinanceVault.db")
+	if isfile(dbPath)
+		error("A Vault already exists at $(dbPath)")
+	end
 
 	if interactive
 		inputUnits = prompt_input("What should the default asset be?","USD")
@@ -56,7 +60,6 @@ function create_vault(; interactive::Bool=true, vaultPath::Union{Nothing,String}
 	end
 
 	# create the database
-	dbPath = joinpath(dbPath,"PersonalFinanceVault.db")
 	println("Creating database in $(dbPath)")
 	db = SQLite.DB(dbPath)
 

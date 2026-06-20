@@ -1,0 +1,74 @@
+date,description,amount
+2024-01-01,ACME Corp Payroll,3028.81
+2024-01-05,Transfer to joint-checking,-1400.0
+2024-01-15,ACME Corp Payroll,2964.05
+2024-01-16,Transfer to brokerage,-800.0
+2024-01-20,ATM withdrawal,-61.44
+2024-01-25,Credit card payment,-306.64
+2024-02-01,ACME Corp Payroll,2981.67
+2024-02-05,Transfer to joint-checking,-1400.0
+2024-02-15,ACME Corp Payroll,2967.34
+2024-02-16,Transfer to brokerage,-800.0
+2024-02-20,ATM withdrawal,-79.56
+2024-02-25,Credit card payment,-400.89
+2024-03-01,ACME Corp Payroll,2969.86
+2024-03-05,Transfer to joint-checking,-1400.0
+2024-03-15,ACME Corp Payroll,2989.08
+2024-03-16,Transfer to brokerage,-800.0
+2024-03-20,ATM withdrawal,-66.09
+2024-03-25,Credit card payment,-253.82
+2024-04-01,ACME Corp Payroll,3004.98
+2024-04-05,Transfer to joint-checking,-1400.0
+2024-04-15,ACME Corp Payroll,3038.26
+2024-04-16,Transfer to brokerage,-800.0
+2024-04-18,IRS tax refund,827.09
+2024-04-20,ATM withdrawal,-68.74
+2024-04-25,Credit card payment,-459.87
+2024-05-01,ACME Corp Payroll,2962.79
+2024-05-05,Transfer to joint-checking,-1400.0
+2024-05-15,ACME Corp Payroll,2959.89
+2024-05-16,Transfer to brokerage,-800.0
+2024-05-20,ATM withdrawal,-75.69
+2024-05-25,Credit card payment,-289.75
+2024-06-01,ACME Corp Payroll,2995.16
+2024-06-05,Transfer to joint-checking,-1400.0
+2024-06-15,ACME Corp Payroll,2980.68
+2024-06-16,Transfer to brokerage,-800.0
+2024-06-20,ATM withdrawal,-67.52
+2024-06-25,Credit card payment,-303.17
+2024-07-01,ACME Corp Payroll,2984.6
+2024-07-05,Transfer to joint-checking,-1400.0
+2024-07-15,ACME Corp Payroll,3000.71
+2024-07-16,Transfer to brokerage,-800.0
+2024-07-20,ATM withdrawal,-70.38
+2024-07-25,Credit card payment,-284.7
+2024-08-01,ACME Corp Payroll,3009.63
+2024-08-05,Transfer to joint-checking,-1400.0
+2024-08-15,ACME Corp Payroll,3031.91
+2024-08-16,Transfer to brokerage,-800.0
+2024-08-20,ATM withdrawal,-63.61
+2024-08-25,Credit card payment,-370.58
+2024-09-01,ACME Corp Payroll,3017.2
+2024-09-05,Transfer to joint-checking,-1400.0
+2024-09-15,ACME Corp Payroll,3018.44
+2024-09-16,Transfer to brokerage,-800.0
+2024-09-20,ATM withdrawal,-74.97
+2024-09-25,Credit card payment,-196.64
+2024-10-01,ACME Corp Payroll,3045.19
+2024-10-05,Transfer to joint-checking,-1400.0
+2024-10-15,ACME Corp Payroll,3035.7
+2024-10-16,Transfer to brokerage,-800.0
+2024-10-20,ATM withdrawal,-75.38
+2024-10-25,Credit card payment,-122.3
+2024-11-01,ACME Corp Payroll,3032.13
+2024-11-05,Transfer to joint-checking,-1400.0
+2024-11-15,ACME Corp Payroll,3009.91
+2024-11-16,Transfer to brokerage,-800.0
+2024-11-20,ATM withdrawal,-61.57
+2024-11-25,Credit card payment,-529.35
+2024-12-01,ACME Corp Payroll,2969.29
+2024-12-05,Transfer to joint-checking,-1400.0
+2024-12-15,ACME Corp Payroll,2993.95
+2024-12-16,Transfer to brokerage,-800.0
+2024-12-20,ATM withdrawal,-63.94
+2024-12-25,Credit card payment,-268.75

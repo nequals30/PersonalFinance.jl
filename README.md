@@ -1,23 +1,31 @@
 # PersonalFinance.jl
-A set of utilities for dealing with personal finance.
 
-## File Encryption
-When dealing with sensitive personal financial documents, there may be a preference to keep data encrypted. For that, this library includes a tool for encrypting files:
+A Julia package for analyzing personal finances. 
+
+Works by loading CSVs with transactions from all accounts into one big ledger called a "Vault" (which is a SQLite database).
+
+Then, there are tools for populating the Vault with market data and analyzing the data, including the ability to calculate net worth accurately to the penny historically.
+
+A single script can rebuild the Vault idempotently from the CSVs, so if anything ever gets messed up or the vault is lost, it can immediately be re-built from the raw CSVs.
+
+Also, there are built-in encryption tools, and the data can be stored in a version controlled way (e.g. with git).
+
+
+## Try it
+
+In the `examples/load_transactions/` folder, there is fake transaction data for a generic person. More information can be found in the [readme for that example](`/examples/load_transactions/`). Running the code below (from this top level directory) will create a Vault with that data:
+
+```bash
+julia --project examples/load_transactions/load_vault.jl
+```
+
+## Encryption
+
+This library includes a tool for encrypting and decrypting files (usually the raw data CSVs):
+
 ```julia
 encrypt_file("/path/to/transactions.csv")
 decrypt_file("/path/to/transactions.csv")
 ```
-This will prompt the user for a password, and the password will be valid for 15 minutes for using these encryption tools.
 
-It can also be used to encrypt and decrypt multiple files in a systematic way:
-```julia
-const filePath = "/path/to/transactions.csv"
-
-ask_password()
-decrypt_file(filePath)
-
-df = CSV.read(filePath,DataFrame)
-
-encrypt_file(filePath, skipConfirmation=true)
-```
-The level of encryption is probably not sufficient enough to withstand motivated parties, but should hopefully be sufficient enough to password protect your files locally.
+If the encrypted files are version controlled, it's better to use `read_encrypted_file(...)`, which will read the contents without decrypting/re-encrypting the file.
