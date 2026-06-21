@@ -150,14 +150,14 @@ end
 
 function list_transactions(v::Vault)
 	tran_df = DataFrame(Tables.columntable(DBInterface.execute(v.db,"""
-		select trans_id,account_name,trans_date,trans_desc,amount,asset_name
-		from transactions
+		select trans_id,account_name,trans_date,trans_desc,amount,asset_name,ownership_share
+		from transactions 
 		left join accounts on (accounts.account_id=transactions.account_id)
 		left join assets on (assets.asset_id=transactions.asset_id)
 		order by trans_date, account_name;
 		;""")))
 
-	rename!(tran_df, ["transaction_id","account_name","date","description","amount","assets"])
+	rename!(tran_df, ["transaction_id","account_name","date","description","amount","assets","ownership_share"])
 	tran_df.date = Date.(tran_df.date, dateformat"yyyy-mm-dd")
 	return tran_df
 end
@@ -308,12 +308,14 @@ function accumulate_mv(v::Vault)
 	dummy_df = DataFrame(date = allDts,
 						 account_name = fill(df.account_name[1], nDts),
 						 assets = fill(df.assets[1], nDts),
-						 amount = zeros(nDts) )
+						 amount = zeros(nDts),
+						 ownership_share = fill(df.ownership_share[1], nDts))
 	df = vcat(df, dummy_df; cols=:union)
 
 	# aggregate
-    daily = combine(groupby(df, [:date, :account_name, :assets]), :amount => sum => :amount)
+    daily = combine(groupby(df, [:date, :account_name, :assets, :ownership_share]), :amount => sum => :amount)
 	daily.colname = daily.account_name .* "::" .* daily.assets
+	daily.amount = daily.amount .* daily.ownership_share
 	w = unstack(daily, :date, :colname, :amount; combine=sum, fill=0)
 	w = sort!(w, :date)
 	w[!, 2:end] = round.(cumsum(Matrix(w[:, 2:end]); dims = 1); digits=2)
