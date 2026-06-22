@@ -299,7 +299,7 @@ function list_assets(v::Vault)
 	   ;""")))
 end
 
-function accumulate_mv(v::Vault)
+function accumulate_mv(v::Vault; group_by::Union{Symbol,Nothing}=nothing)
 	df = list_transactions(v)
 
 	# add a bunch of dummy rows
@@ -321,10 +321,29 @@ function accumulate_mv(v::Vault)
 	w[!, 2:end] = round.(cumsum(Matrix(w[:, 2:end]); dims = 1); digits=2)
 
 	# multiply by prices
+	colnames = names(w)[2:end]
 	asset_names = String.(last.(split.(names(w)[2:end], "::")))
 	prices = get_asset_prices(v, allDts, asset_names)
 
 	out = w[:,2:end] .* prices
+
+	# optionally group output columns by account name or asset class
+	if group_by !== nothing
+		group_by in (:account_name, :asset_name) ||
+			error("group_by must be :account_name, :asset_name, or nothing")
+
+		# colname is "account_name::assets"; pick which side to group on
+		keys = group_by === :account_name ?
+			String.(first.(split.(colnames, "::"))) :
+			asset_names
+
+		grouped = DataFrame()
+		for g in unique(keys)
+			cols = colnames[keys .== g]
+			grouped[!, g] = sum(x -> coalesce.(x, 0), eachcol(out[:, cols]))
+		end
+		out = grouped
+	end
 
 	return out, allDts
 
